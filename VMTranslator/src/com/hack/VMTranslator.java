@@ -6,19 +6,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.hack.Parser.statement;
 
 public class VMTranslator {
 
-	// public static String filename;
-
 	public static void main(String[] args) throws IOException {
-		args = new String[] {
-				"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\BasicTest\\BasicTest.vm" };
-
+//		args = new String[] {
+//				"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\BasicTest\\BasicTest.vm" };
+//"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\PointerTest\\PointerTest.vm" };
+//				"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\StaticTest\\StaticTest.vm"};
+		
 		if (args.length == 0) {
 			System.out.println("Enter valid filenames");
 			System.exit(0);
@@ -32,7 +30,6 @@ public class VMTranslator {
 			File file = new File(filepath);
 			if (file.exists() && file.isFile()) {
 				Constants.FileName = file.getName().substring(0, file.getName().length() - 3);
-				// List<String> lstASM = new ArrayList<String>();
 
 				Parser parser = new Parser();
 
@@ -49,10 +46,7 @@ public class VMTranslator {
 						String processedLine = parser.Parse(line);
 						if (processedLine != null) {
 							statement stm = parser.IdentifyStatement(processedLine);
-							// System.out.println("processedLine: " + processedLine + "\n\rStatment type: "
-							// + stm);
 							System.out.println("// " + processedLine);
-							// .add("//" + processedLine);
 							bfwrite.append("// " + processedLine);
 							bfwrite.newLine();
 							String[] asmLines = codeWriter.encode(processedLine, stm);
@@ -62,7 +56,6 @@ public class VMTranslator {
 								bfwrite.append(strAsm + "\t\t\t\t\t" + "//" + lineCnt++);
 								bfwrite.newLine();
 								System.out.println(strAsm);
-								// lstASM.add(strAsm);
 							}
 							bfwrite.newLine();
 
