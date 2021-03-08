@@ -12,11 +12,11 @@ import com.hack.Parser.statement;
 public class VMTranslator {
 
 	public static void main(String[] args) throws IOException {
-//		args = new String[] {
-//				"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\BasicTest\\BasicTest.vm" };
+		args = new String[] {
+				"G:\\Automation Journey\\nand2tetris\\projects\\07\\StackArithmetic\\StackTest\\StackTest.vm" };
 //"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\PointerTest\\PointerTest.vm" };
 //				"G:\\Automation Journey\\nand2tetris\\projects\\07\\MemoryAccess\\StaticTest\\StaticTest.vm"};
-		
+
 		if (args.length == 0) {
 			System.out.println("Enter valid filenames");
 			System.exit(0);
@@ -53,7 +53,8 @@ public class VMTranslator {
 							if (asmLines == null)
 								continue;
 							for (String strAsm : asmLines) {
-								bfwrite.append(strAsm + "\t\t\t\t\t" + "//" + lineCnt++);
+								bfwrite.append(
+										strAsm + "\t\t\t\t\t" + "//" + (strAsm.startsWith("(") ? "" : lineCnt++));
 								bfwrite.newLine();
 								System.out.println(strAsm);
 							}
@@ -61,6 +62,16 @@ public class VMTranslator {
 
 						}
 					}
+
+					String[] asmLines = codeWriter.EndProgram();
+					if (asmLines == null)
+						continue;
+					for (String strAsm : asmLines) {
+						bfwrite.append(strAsm + "\t\t\t\t\t" + "//" + lineCnt++);
+						bfwrite.newLine();
+						System.out.println(strAsm);
+					}
+
 				} catch (Exception ex) {
 					System.out.println(ex);
 				} finally {

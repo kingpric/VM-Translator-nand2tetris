@@ -7,6 +7,9 @@ import com.hack.Parser.statement;
 
 public class CodeWriter {
 
+	// Used in creating label for logical operation jump
+	private int eqCounter = 0, ltCounter = 0, gtCounter = 0, endCounter = 0;
+
 	public String[] encode(String operation, statement stm) throws Exception {
 		switch (stm) {
 		case pop:
@@ -19,6 +22,18 @@ public class CodeWriter {
 			return sub();
 		case neg:
 			return neg();
+		case eq:
+			return eq();
+		case lt:
+			return lt();
+		case gt:
+			return gt();
+		case or:
+			return or();
+		case and:
+			return and();
+		case not:
+			return not();
 		default:
 			return null;
 
@@ -78,8 +93,7 @@ public class CodeWriter {
 		cmds.add("@" + offsetSegment);
 		cmds.add("D=A");
 
-		// if segment is not constant
-		// D=segment base addr + offset
+		// if segment is not constant D=segment base addr + offset
 		if (seg != segments.CONSTANT) {
 			cmds.add("@" + seg.getSegment() + ((seg == segments.STATIC) ? "." + words[2] : ""));
 
@@ -88,7 +102,7 @@ public class CodeWriter {
 			else
 				cmds.add("A=D+M");
 
-			//cmds.add("A=D+M");
+			// cmds.add("A=D+M");
 			cmds.add("D=M");
 		}
 
@@ -163,12 +177,185 @@ public class CodeWriter {
 		cmds.add("@" + segments.STACK.getSegment());
 		cmds.add("M=M-1");
 		cmds.add("A=M");
+		cmds.add("M=-M");
+
+		// SP++
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M+1");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] eq() {
+		List<String> cmds = new ArrayList<String>();
+
+		// SP--, D = *SP
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+		cmds.add("D=M");
+
+		// SP--,
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+
+		// D=M-D, if D==0, set M=-1 (true) and Jump to end
+		cmds.add("D=D-M");
+		cmds.add("M=-1");
+		cmds.add("@" + Constants.FileName + "_JEQ_" + (++eqCounter));
+		cmds.add("D;JEQ");
+
+		// if execute means D!=0 and set M=0 (false)
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("A=M");
+		cmds.add("M=0");
+
+		// *SP=D, SP++
+		cmds.add("(" + Constants.FileName + "_JEQ_" + (eqCounter) + ")");
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M+1");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] gt() {
+		List<String> cmds = new ArrayList<String>();
+
+		// SP--, D = *SP
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+		cmds.add("D=M");
+
+		// SP--,
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+
+		// D=M-D, if D>0, set M=-1 (true) and Jump to end
+		cmds.add("D=M-D");
+		cmds.add("M=-1");
+		cmds.add("@" + Constants.FileName + "_JGT_" + (++gtCounter));
+		cmds.add("D;JGT");
+
+		// if execute means D!=0 and set M=0
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("A=M");
+		cmds.add("M=0");
+
+		// *SP=D, SP++
+		cmds.add("(" + Constants.FileName + "_JGT_" + (gtCounter) + ")");
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M+1");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] lt() {
+		List<String> cmds = new ArrayList<String>();
+
+		// SP--, D = *SP
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+		cmds.add("D=M");
+
+		// SP--,
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+
+		// D=M-D, if D<0, set M=-1 (true) and Jump to end
+		cmds.add("D=M-D");
+		cmds.add("M=-1");
+		cmds.add("@" + Constants.FileName + "_JLT_" + (++ltCounter));
+		cmds.add("D;JLT");
+
+		// if execute means D!=0 and set M=0
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("A=M");
+		cmds.add("M=0");
+
+		// *SP=D, SP++
+		cmds.add("(" + Constants.FileName + "_JLT_" + (ltCounter) + ")");
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M+1");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] or() {
+		List<String> cmds = new ArrayList<String>();
+
+		// SP--, D = *SP
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+		cmds.add("D=M");
+
+		// SP--,
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+
+		// M=M|D
+		cmds.add("M=D|M");
+
+		// SP++
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M+1");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] and() {
+		List<String> cmds = new ArrayList<String>();
+
+		// SP--, D = *SP
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+		cmds.add("D=M");
+
+		// SP--,
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+
+		// M=M|D
+		cmds.add("M=D&M");
+
+		// SP++
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M+1");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] not() {
+		List<String> cmds = new ArrayList<String>();
+
+		// SP--, D = *SP
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
 		cmds.add("M=!M");
 
 		// SP++
 		cmds.add("@" + segments.STACK.getSegment());
 		cmds.add("M=M+1");
 
+		return cmds.toArray(new String[0]);
+	}
+	
+	public String[] EndProgram() {
+		List<String> cmds = new ArrayList<String>();
+		
+		cmds.add("("+ Constants.FileName + "_END)");
+		cmds.add("@"+ Constants.FileName + "_END");
+		cmds.add("0;JMP");
+		
 		return cmds.toArray(new String[0]);
 	}
 
