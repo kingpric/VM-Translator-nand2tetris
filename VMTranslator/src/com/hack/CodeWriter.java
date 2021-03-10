@@ -8,7 +8,7 @@ import com.hack.Parser.statement;
 public class CodeWriter {
 
 	// Used in creating label for logical operation jump
-	private int eqCounter = 0, ltCounter = 0, gtCounter = 0, endCounter = 0;
+	private int eqCounter = 0, ltCounter = 0, gtCounter = 0, endCounter = 0, labelCounter = 0;
 
 	public String[] encode(String operation, statement stm) throws Exception {
 		switch (stm) {
@@ -34,6 +34,14 @@ public class CodeWriter {
 			return and();
 		case not:
 			return not();
+		case label:
+			return label(operation);
+		case GOTO:
+			return Goto(operation);
+		case IF:
+			return IfGoto(operation);
+		case Function:
+			return function(operation);
 		default:
 			return null;
 
@@ -348,14 +356,62 @@ public class CodeWriter {
 
 		return cmds.toArray(new String[0]);
 	}
+
+	private String[] label(String operation) {
+		String[] words = operation.split(" ");
+
+		List<String> cmds = new ArrayList<String>();
+
+		//creating label: (<LABEL>)
+		cmds.add("(" + Constants.FileName.toUpperCase()
+				+ (Constants.FunctionName != null ? "." + Constants.FunctionName : "") + "$" + words[1] + ")");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] Goto(String operation) {
+		String[] words = operation.split(" ");
+
+		List<String> cmds = new ArrayList<String>();
+
+		//jump to location <LABEL>
+		cmds.add("@" + Constants.FileName.toUpperCase()
+				+ (Constants.FunctionName != null ? "." + Constants.FunctionName : "") + "$" + words[1]);
+		cmds.add("0;JMP");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] IfGoto(String operation) {
+
+		String[] words = operation.split(" ");
+
+		// if SP*!=0 then jump to location <LABEL>
+		List<String> cmds = new ArrayList<String>();
+		cmds.add("@" + segments.STACK.getSegment());
+		cmds.add("M=M-1");
+		cmds.add("A=M");
+		cmds.add("D=M");
+		cmds.add("@" + Constants.FileName.toUpperCase()
+				+ (Constants.FunctionName != null ? "." + Constants.FunctionName : "") + "$" + words[1]);
+		cmds.add("D;JNE");
+
+		return cmds.toArray(new String[0]);
+	}
+
+	private String[] function(String Operation) {
+		
+		return null;
+		
+	}
 	
 	public String[] EndProgram() {
 		List<String> cmds = new ArrayList<String>();
-		
-		cmds.add("("+ Constants.FileName + "_END)");
-		cmds.add("@"+ Constants.FileName + "_END");
+
+		cmds.add("(" + Constants.FileName + "_END)");
+		cmds.add("@" + Constants.FileName + "_END");
 		cmds.add("0;JMP");
-		
+
 		return cmds.toArray(new String[0]);
 	}
 

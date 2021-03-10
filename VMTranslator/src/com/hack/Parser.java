@@ -9,7 +9,7 @@ public class Parser {
 		}
 
 		String processedLine = "";
-		
+
 		for (char ch : line.toCharArray()) {
 			if (ch == '/') {
 				break;
@@ -27,7 +27,7 @@ public class Parser {
 	public statement IdentifyStatement(String operation) {
 		String[] words = operation.split(" ");
 		for (statement stm : statement.values()) {
-			if (stm.toString().equalsIgnoreCase(words[0])) {
+			if (stm.getCmdType().equalsIgnoreCase(words[0])) {
 				return stm;
 			}
 		}
@@ -35,8 +35,22 @@ public class Parser {
 	}
 
 	enum statement {
-		whitespace("Whitespace"), pop("Memory"), push("Memory"), add("Arithmetic"), sub("Arithmetic"),
-		neg("Arithmetic"), eq("Logical"), gt("Logical"), lt("Logical"), and("Logical"), or("Logical"), not("Logical");
+		whitespace("Whitespace"),
+
+		// Arithmetic
+		add("add"), sub("sub"), neg("neg"),
+
+		// Logical
+		eq("eq"), gt("gt"), lt("lt"), and("and"), or("or"), not("not"),
+
+		// Memory
+		pop("pop"), push("push"),
+
+		// Braching
+		label("label"), GOTO("goto"), IF("if-goto"),
+
+		// Function
+		Function("function"), call("call"), Return("return"),;
 
 		String cmdType;
 
